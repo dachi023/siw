@@ -1,0 +1,11 @@
+{
+  "require": {
+    "php": "~5.5.0"
+  },
+  "require-dev": {
+    "heroku/heroku-buildpack-php": "*"
+  },
+  "autoload": {
+    "psr-0": {"Siw\\": "src/"}
+  }
+}
