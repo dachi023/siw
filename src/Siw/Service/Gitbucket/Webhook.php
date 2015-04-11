@@ -10,10 +10,15 @@ class Webhook {
   const OPEN_PULL_REQUEST   = 'open_pull_request';
   const CLOSE_PULL_REQUEST  = 'close_pull_request';
   const REOPEN_PULL_REQUEST = 'reopen_pull_request';
+  const OPEN_ISSUE          = 'open_issue';
+  const CLOSE_ISSUE         = 'close_issue';
+  const REOPEN_ISSUE        = 'reopen_issue';
+  const COMMENT_ISSUE       = 'comment_issue';
 
   const ACTION_OPEN   = 'opened';
   const ACTION_CLOSE  = 'closed';
   const ACTION_REOPEN = 'reopened';
+  const ACTION_CREATE = 'created';
 
   public $type;
 
@@ -21,7 +26,7 @@ class Webhook {
 
   public function __construct(Payload $payload) {
     $this->payload = $payload;
-    $this->setType();
+    $this->type = $this->getType();
   }
 
   public function getAttachments() {
@@ -74,30 +79,80 @@ class Webhook {
         ];
         break;
 
+      case self::OPEN_ISSUE:
+        $attachments[] = [
+          'fallback'   => 'GitBucket webhook',
+          'color'      => '#F29513',
+          'pretext'    => $this->getIssueText('created', false),
+          'title'      => "#{$data['number']} {$data['issue']['title']}",
+          'title_link' => "{$data['repository']['html_url']}/issues/{$data['number']}",
+          'text'       => $data['issue']['body']
+        ];
+        break;
+
+      case self::CLOSE_ISSUE:
+        $attachments[] = [
+          'fallback' => 'GitBucket webhook',
+          'color'    => '#E3E4E6',
+          'text'     => $this->getIssueText('closed')
+        ];
+        break;
+
+      case self::REOPEN_ISSUE:
+        $attachments[] = [
+          'fallback' => 'GitBucket webhook',
+          'color'    => '#F29513',
+          'text'     => $this->getIssueText('re-opened')
+        ];
+        break;
+
+      case self::COMMENT_ISSUE:
+        $number = $data['issue']['number'];
+        $pretext = "[{$data['repository']['full_name']}]"
+          . " New comment on issue <{$data['repository']['html_url']}/issues/{$number}|#{$number}: {$data['issue']['title']}>";
+        $attachments[] = [
+          'fallback' => 'GitBucket webhook',
+          'color'    => '#FAD5A1',
+          'pretext'  => $pretext,
+          'title'    => "Comment by {$data['sender']['login']}",
+          'text'     => $data['comment']['body']
+        ];
+        break;
+
       default:
         break;
     }
     return $attachments;
   }
 
-  private function setType() {
+  private function getType() {
     $data = $this->payload->data;
     if (isset($data['commits']) && 0 < count($data['commits'])) {
-      $this->type = self::COMMIT;
-      return;
+      return self::COMMIT;
     }
     if (isset($data['pull_request'])) {
       if ($data['action'] === self::ACTION_OPEN) {
-        $this->type = self::OPEN_PULL_REQUEST;
-        return;
+        return self::OPEN_PULL_REQUEST;
       }
       if ($data['action'] === self::ACTION_CLOSE) {
-        $this->type = self::CLOSE_PULL_REQUEST;
-        return;
+        return self::CLOSE_PULL_REQUEST;
       }
       if ($data['action'] === self::ACTION_REOPEN) {
-        $this->type = self::REOPEN_PULL_REQUEST;
-        return;
+        return self::REOPEN_PULL_REQUEST;
+      }
+    }
+    if (isset($data['issue'])) {
+      if ($data['action'] === self::ACTION_OPEN) {
+        return self::OPEN_ISSUE;
+      }
+      if ($data['action'] === self::ACTION_CLOSE) {
+        return self::CLOSE_ISSUE;
+      }
+      if ($data['action'] === self::ACTION_REOPEN) {
+        return self::REOPEN_ISSUE;
+      }
+      if ($data['action'] === self::ACTION_CREATE) {
+        return self::COMMENT_ISSUE;
       }
     }
   }
@@ -109,6 +164,17 @@ class Webhook {
     $text = "[{$data['repository']['full_name']}] Pull request {$action}";
     if ($addTitle) {
       $text .= ": <{$pr['html_url']}|#{$data['number']} {$pr['title']}>";
+    }
+    return StringUtil::deleteLineSeparator("{$text} by <{$sender['html_url']}|{$sender['login']}>");
+  }
+
+  private function getIssueText($action, $addTitle = true) {
+    $data = $this->payload->data;
+    $sender = $data['sender'];
+    $text = "[{$data['repository']['full_name']}] Issue {$action}";
+    if ($addTitle) {
+      $number = $data['number'];
+      $text .= ": <{$data['repository']['html_url']}/issues/{$number}|#{$number} {$data['issue']['title']}>";
     }
     return StringUtil::deleteLineSeparator("{$text} by <{$sender['html_url']}|{$sender['login']}>");
   }

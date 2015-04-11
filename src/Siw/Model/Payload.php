@@ -12,6 +12,8 @@ class Payload {
     'action',
     'number',
     'pull_request',
+    'issue',
+    'comment',
     'sender'
   ];
 
