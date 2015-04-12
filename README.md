@@ -3,7 +3,9 @@ This is notification tool for Slack.
 
 ## Futures
 - [GitBucket](https://github.com/takezoe/gitbucket)
-  - Push new commits
+  - Commit
+  - Pull-request
+  - Issue
 
 ## Installation
 - Download latest sources
@@ -18,11 +20,6 @@ This is notification tool for Slack.
 Edit the configuration file. When give request parameters, don't need edit it
 
 Please set it in webhook of each service
-
-#### Reuquest URL
-
-- GitBcuket
-  - web/gitbucket.php
 
 #### Edit files
 
@@ -66,6 +63,9 @@ Please install [Heroku Toolbelt](https://toolbelt.heroku.com)
   $ heroku create
   $ git push heroku master
   ```
+
+0. Add service hooks
+  - your-domain.herokuapp.com/gitbucket.php
 
 ## License
 - MIT
