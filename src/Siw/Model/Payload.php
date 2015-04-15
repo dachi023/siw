@@ -30,6 +30,6 @@ class Payload {
     if (!isset($this->data['ref']) || strstr($this->data['ref'], 'refs/heads/') === false) {
       return null;
     }
-    return str_replace('refs/heads/', '', $this->payload['ref']);
+    return str_replace('refs/heads/', '', $this->data['ref']);
   }
 }
