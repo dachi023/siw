@@ -1,4 +1,4 @@
-# Siw(Slack-incoming-webhook)
+# siw(Slack-incoming-webhook)
 This is notification tool for Slack.
 
 ## Futures
