@@ -1,7 +1,7 @@
 # siw(Slack-incoming-webhook)
 This is notification tool for Slack.
 
-## Futures
+## Features
 - [GitBucket](https://github.com/takezoe/gitbucket)
   - Commit
   - Pull-request
